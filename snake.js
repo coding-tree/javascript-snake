@@ -1,5 +1,5 @@
 const MAP = {
-  scale: 70,
+  scale: 100,
   x: 12,
   y: 8
 };
@@ -70,7 +70,7 @@ const DirectionToMoveVector = {
 const SNAKE_DEFAULT = {
   speed: 500,
   fastSpeedUp: 25,
-  position: [[3, 2], [2, 2], [1, 2]]
+  position: [[3, 2], [2, 2], [1, 2], [0, 2]]
 };
 
 const loadImage = src => {
@@ -108,20 +108,35 @@ class CanvasManager {
   }
 
   drawSnake(snake) {
-    snake.position.slice(1).map(position => {
+    this._drawSnakeTile(snake);
+    snake.position.slice(1, -1).map(position => {
       this._drawSnakeBodyPart(position);
     });
     this._drawEyes(snake);
   }
 
   _drawSnakeBodyPart(position) {
-    loadImage("./body-right.svg").then(image => {
+    loadImage("./body-vertical.svg").then(image => {
+      this.ctx.imageSmoothingEnabled = true;
       this.ctx.drawImage(
         image,
         position.x * MAP.scale + 1,
         position.y * MAP.scale + 1,
-        70,
-        70
+        MAP.scale,
+        MAP.scale
+      );
+    });
+  }
+  _drawSnakeTile(snake) {
+    const lastPosition = snake.position.length - 1;
+    loadImage("./tile-vertical.svg").then(image => {
+      this.ctx.imageSmoothingEnabled = false;
+      this.ctx.drawImage(
+        image,
+        snake.position[lastPosition].x * MAP.scale + 1,
+        snake.position[lastPosition].y * MAP.scale + 1,
+        MAP.scale,
+        MAP.scale
       );
     });
   }
@@ -129,13 +144,14 @@ class CanvasManager {
   _rotateAndPaintImage(image, angleInRad, positionX, positionY, axisX, axisY) {
     this.ctx.translate(positionX, positionY);
     this.ctx.rotate(angleInRad);
-    this.ctx.drawImage(image, -axisX, -axisY, 70, 70);
+    this.ctx.imageSmoothingEnabled = false;
+    this.ctx.drawImage(image, -axisX, -axisY, MAP.scale, MAP.scale);
   }
 
   _drawEyes(snake) {
     const TO_RADIANS = Math.PI / 180;
 
-    loadImage("./head-right.svg").then(image => {
+    loadImage("./head-eat-vertical.svg").then(image => {
       this.ctx.save();
       this._rotateAndPaintImage(
         image,
